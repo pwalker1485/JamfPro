@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AllowOutdatedPlugins</key>
+	<false/>
+	<key>AlwaysAuthorizePlugins</key>
+	<true/>
+	<key>AutofillCreditCardEnabled</key>
+	<false/>
+	<key>BackgroundModeEnabled</key>
+	<false/>
+	<key>DefaultBrowserSettingEnabled</key>
+	<false/>
+	<key>DefaultSearchProviderEnabled</key>
+	<true/>
+	<key>DefaultSearchProviderName</key>
+	<string>Google</string>
+	<key>DefaultSearchProviderSearchURL</key>
+	<string>{google:baseURL}search?q={searchTerms}</string>
+	<key>ExtensionInstallBlocklist</key>
+	<array>
+			<string>emfinbmielocnlhgmfkkmkngdoccbadn</string><!--ARC Welder-->
+			<string>omdakjcmkglenbhjadbccaookpfjihpa</string><!--TunnelBear-->
+			<string>gkojfkhlekighikafcpjkiklfbnlmeio</string><!--VPN-->
+			<string>ffbkglfijbcbgblgflchnbphjdllaogb</string><!--VPN-->
+			<string>goimpaiignmlnmdnpnkbbjoophmbebhp</string><!--Tor-->
+			<string>kjoabfljeghcinlpjhdbdfbcflapkccm</string><!--Tor-->
+			<string>hfddekpiekhlkkgeaobcdkeonpkinipo</string><!--Tor-->
+			<string>hkgndiocipalkpejnpafdbdlfdjihomd</string><!--AirDroid-->
+			<string>bodncoafpihbhpfljcaofnebjkaiaiga</string><!--appear.in screen sharing-->
+			<string>lmjegmlicamnimmfhcmpkclmigmmcbeh</string><!--Application Launcher for Drive (by Google)-->
+			<string>chdcioeefochikmopapgkooakjbkfaed</string><!--Awesome Sports Search Awesome Sports Search-->
+			<string>efmjfjelnicpmdcmfikempdhlmainjcb</string><!--Chrome Remote Desktop-->
+			<string>inomeogfingihgjfjlpeplalcfajhgai</string><!--Chrome Remote Desktop-->
+			<string>diiljolikellacglchindpnmfhnalmlm</string><!--Login Easier V2.3-->
+			<string>ofknmmkogpjmfloifbbknndaimdfkcbm</string><!--Mac Search Manager-->
+			<string>ndjpildffkeodjdaeebdhnncfhopkajk</string><!--Network File Share for Chrome OS-->
+			<string>fjilgacmaanmiggbkajdkmnjekkbciih</string><!--Safe Search Safe Search by Safely-->
+			<string>mdfhkikdjdnoambdbgehaghceipnpmlo</string><!--Safety Search by Safely Safety Search by Safely-->
+			<string>giojhdacejeffoobipkdpmpaiajendbc</string><!--The Reading Hub-->
+			<string>kfhobpngpkdpmlimlhcmailleodhhagi</string><!--UKBay Launcher-->
+			<string>ofhbbkphhbklhfoeikjpcbhemlocgigb</string><!--Web Server for Chrome-->
+			<string>olkpikmlhoaojbbmmpejnimiglejmboe</string><!--Downloader for Instagram-->
+	</array>
+	<key>PopupsAllowedForUrls</key>
+	<array>
+			<string>[*.]approved_URL.com</string><!--Approved Site-->
+	</array>
+	<key>SafeBrowsingEnabled</key>
+	<true/>
+	<key>ShowHomeButton</key>
+	<true/>
+	<key>SitePerProcess</key>
+	<true/>
+	<key>SyncDisabled</key>
+	<false/>
+</dict>
+</plist>

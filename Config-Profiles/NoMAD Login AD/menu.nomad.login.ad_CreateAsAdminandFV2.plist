@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+	<key>ADDomain</key>
+	<string>YOURDOMAIN</string>
+	<key>AllowNetworkSelection</key>
+	<true/>
+  	<key>BackgroundImageAlpha</key>
+  	<integer>0</integer>
+  	<key>BackgroundImage</key>
+  	<string>/path/to/image/backgroundimage.jpg</string>
+  	<key>CreateAdminUser</key>
+  	<true/>
+	<key>DefaultSystemInformation</key>
+	<string>IP</string>
+	<key>DemobilizeUsers</key>
+	<true/>
+  	<key>EnableFDE</key>
+  	<true/>
+	<key>IgnoreSites</key>
+	<true/>
+	<key>KeychainAddNoMAD</key>
+	<true/>
+	<key>KeychainCreate</key>
+	<true/>
+	<key>KerberosRealm</key>
+	<string>YOURDOMAIN</string>
+	<key>LoginLogo</key>
+	<string>/path/to/image/Logo-image.png</string>
+	<key>LoginScreen</key>
+	<false/>
+	<key>UsernameFieldPlaceholder</key>
+	<string>YOURDOMAIN Username</string>
+</dict>
+</plist>

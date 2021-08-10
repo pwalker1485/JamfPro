@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>antivirusEngine</key>
+    <dict>
+        <key>enableRealTimeProtection</key>
+        <true/>
+        <key>threatTypeSettings</key>
+        <array>
+            <dict>
+                <key>key</key>
+                <string>potentially_unwanted_application</string>
+                <key>value</key>
+                <string>block</string>
+            </dict>
+            <dict>
+                <key>key</key>
+                <string>archive_bomb</string>
+                <key>value</key>
+                <string>audit</string>
+            </dict>
+        </array>
+    </dict>
+    <key>cloudService</key>
+    <dict>
+        <key>enabled</key>
+        <true/>
+        <key>automaticSampleSubmission</key>
+        <true/>
+        <key>automaticDefinitionUpdateEnabled</key>
+        <true/>
+    </dict>
+    <key>edr</key>
+    <dict>
+        <key>tags</key>
+        <array>
+            <dict>
+                <key>key</key>
+                <string>GROUP</string>
+                <key>value</key>
+                <string>CEN-UK:EUC</string>
+            </dict>
+        </array>
+    </dict>
+</dict>
+</plist>

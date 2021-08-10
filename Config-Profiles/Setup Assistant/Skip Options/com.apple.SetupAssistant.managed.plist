@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SkipAppearance</key>
+	<true/>
+	<key>SkipCloudSetup</key>
+	<true/>
+	<key>SkipPrivacySetup</key>
+	<true/>
+	<key>SkipScreenTime</key>
+	<true/>
+	<key>SkipSiriSetup</key>
+	<true/>
+	<key>SkipTouchIDSetup</key>
+	<true/>
+	<key>SkipTrueTone</key>
+	<true/>
+	<key>SkipiCloudStorageSetup</key>
+	<true/>
+</dict>
+</plist>

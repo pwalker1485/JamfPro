@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>moreInformationText</key>
+    <string>Company Name uses the recovery key in our management servers to securely and safely enable your machine to unlock in the event your device has trouble unlocking.</string>
+    <key>passwordPlaceholder</key>
+    <string>Password:</string>
+    <key>suppressRecoveryKey</key>
+    <false/>
+    <key>usernamePlaceholder</key>
+    <string>Username: firstnamesurname</string>
+    <key>viewInstructions</key>
+    <string>Our management server does not have a valid recovery key for this device. Please enter the username and password you use to unlock this Mac.</string>
+    <key>viewLogoPath</key>
+    <string>/path/to/image/Logo-icons1.png</string>
+    <key>viewTitle</key>
+    <string>Company Name</string>
+  </dict>
+</plist>
