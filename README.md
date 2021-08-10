@@ -1,3 +1,3 @@
 # JamfPro
 
-A collection of scripts and property lists created for use in Jamf Pro
+Scripts and property lists created for use with Jamf Pro
