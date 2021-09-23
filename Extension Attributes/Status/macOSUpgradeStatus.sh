@@ -10,10 +10,6 @@
 #                            Variables                                 #
 ########################################################################
 
-# Get the logged in user
-loggedInUser=$(stat -f %Su /dev/console)
-# Path to Jamf Connect Login bundle
-jclBundle="/Library/Security/SecurityAgentPlugins/JamfConnectLogin.bundle"
 # Installer location
 macOSInstaller="/Applications/Install macOS Big Sur.app"
 # Required disk space
@@ -46,14 +42,10 @@ fi
 # Upgrade Status
 autoload is-at-least
 if ! is-at-least "$targetOS" "$osVersion"; then
-	if [[ -d "$jclBundle" ]]; then
-		if [[ "$spaceStatus" == "OK" ]] && [[ "$installerStatus" == "Found" ]]; then
-      		echo "<result>Upgrade Ready</result>"
-    	else
-      		echo "<result>Disk space: ${freeSpaceFull} | Installer: ${installerStatus}</result>"
-		fi
-	else
-  		echo "<result>Disk space: ${freeSpaceFull} | Installer: ${installerStatus}</result>"
+	if [[ "$spaceStatus" == "OK" ]] && [[ "$installerStatus" == "Found" ]]; then
+      	echo "<result>Upgrade Ready</result>"
+    else
+      	echo "<result>Disk space: ${freeSpaceFull} | Installer: ${installerStatus}</result>"
 	fi
 else
 	echo "<result>Not Required</result>"
