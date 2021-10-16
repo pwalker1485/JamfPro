@@ -149,7 +149,7 @@ function jamfHelperLowDiskSpace ()
 {
 # JamfHelper command when disk space is less than 5GB
 HELPER2=$(/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility \
--icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertCautionIcon.icns -title 'Message from Bauer Technology' \
+-icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertCautionIcon.icns -title 'Message from Department Name' \
 -heading 'You are running out of disk space!' -description 'Your Mac, '$hostName', is running out of space and will become unresponsive if no action is taken.
 
 - Total size: '$macHDTotalBootDriveSizeHuman'
