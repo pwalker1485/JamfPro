@@ -1,19 +1,26 @@
-#!/bin/bash
+#!/bin/zsh
 
 ########################################################################
 #                      Snow Agent Version - EA                         #
-################### Written by Phil Walker Sep 2020 ####################
+################### Written by Phil Walker Nov 2021 ####################
 ########################################################################
+
+########################################################################
+#                            Variables                                 #
+########################################################################
+
+# Snow Agent
+snowAgent="/opt/snow/snowagent"
 
 ########################################################################
 #                         Script starts here                           #
 ########################################################################
 
-if [[ -e "/opt/snow/snowagent" ]]; then
+agentVersion=""
+# Check if the agent is installed
+if [[ -f "$snowAgent" ]]; then
     # Check the version
-    agentVersion=$(/opt/snow/snowagent version | cut -f1 -d"+")
-    echo "<result>${agentVersion}</result>"
-else
-    echo "<result>Not Installed</result>"
+    agentVersion=$("$snowAgent" version | cut -f1 -d"+")
 fi
+echo "<result>${agentVersion}</result>"
 exit 0
