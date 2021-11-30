@@ -52,31 +52,6 @@ imageMacPro2013='iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAAsTAAA
 #                            Functions                                 #
 ########################################################################
 
-# Find correct format for real name of logged in user
-function getRealName ()
-{
-# If Jamf Connect is installed try to get the value from the Jamf Connect state settings
-if [[ -f "/Users/${loggedInUser}/Library/Preferences/com.jamf.connect.state.plist" ]]; then
-	userRealName=$(sudo -u "$loggedInUser" defaults read com.jamf.connect.state UserCN 2>/dev/null)
-	if [[ "$userRealName" == "" ]]; then
-		# If no value is found then use the value from Directory Service
-		userRealName=$(dscl . -read /Users/"$loggedInUser" | grep -A1 "RealName:" | sed -n '2p' | awk -F, '{print $2, $1}' | xargs)
-	fi
-else
-	# Logged in users ID
-	loggedInUserID=$(id -u "$loggedInUser")
-	if [[ "$loggedInUser" =~ "admin" ]];then
-		userRealName=$(dscl . -read /Users/"$loggedInUser" | grep -A1 "RealName:" | sed -n '2p' | awk -F, '{print $1, $2, $3}' | xargs)
-	else
-		if [[ "$loggedInUserID" -lt "1000" ]]; then
-			userRealName=$(dscl . -read /Users/"$loggedInUser" | grep -A1 "RealName:" | sed -n '2p' | awk -F, '{print $1, $2}' | xargs)
-  		else
-    		userRealName=$(dscl . -read /Users/"$loggedInUser" | grep -A1 "RealName:" | sed -n '2p' | awk -F, '{print $2, $1}' | xargs)
-  		fi
-	fi
-fi
-}
-
 function darkModeEnabled ()
 {
 darkModeStatus=$(defaults read -g AppleInterfaceStyle 2>/dev/null)
@@ -226,9 +201,9 @@ function menuUser ()
 # Display logged in user account privileges	
 if [[ $(dsmemberutil checkmembership -U "$loggedInUser" -G admin) != *not* ]]; then
 	#Show on holding alt key if user has admins
-	echo "🔓 $userRealName has admin rights | color=red alternate=true"
+	echo "🔓 $loggedInUser has admin rights | color=red alternate=true"
 else
-	echo "🔒 $userRealName is a standard account | alternate=true"
+	echo "🔒 $loggedInUser is a standard account | alternate=true"
 fi
 }
 
@@ -236,8 +211,6 @@ fi
 #                         Script starts here                           #
 ########################################################################
 
-# Get the logged in users real name for jamf Helper windows and admin check
-getRealName
 # Check for Dark Mode
 darkModeEnabled
 # Check the status of the storage and set the required colour and icons
