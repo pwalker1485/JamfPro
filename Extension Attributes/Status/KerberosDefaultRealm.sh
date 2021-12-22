@@ -15,8 +15,6 @@ kerbConfig="/etc/krb5.conf"
 defaultRealm="YOUR.DOMAIN"
 # OS product version
 osVersion=$(sw_vers -productVersion)
-# Mac model
-macModel=$(system_profiler SPHardwareDataType | grep "Model Name" | sed 's/Model Name: //' | xargs)
 # Big Sur major version
 bigSurMajor="11"
 
