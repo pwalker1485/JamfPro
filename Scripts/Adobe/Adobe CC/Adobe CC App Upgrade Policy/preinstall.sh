@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 ########################################################################
 # Adobe Creative Cloud Application Upgrade Policy Script - Preinstall  #
@@ -8,31 +8,43 @@
 # an end users version of a CC app to the latest version.
 # Must be set to run before the package install
 
+# Modified Mar 2022
+
 ########################################################################
 #                            Variables                                 #
 ########################################################################
 
 ############ Variables for Jamf Pro Parameters - Start #################
-# App sap code
+# App sap code (https://helpx.adobe.com/enterprise/kb/apps-deployed-without-base-versions.html)
 sapCode="$4"
 # CC app name
 appNameForRemoval="$5"
-# base version
-version2015="$6"
-version2017="$7"
-version2018="$8"
-version2019="$9"
-# CC App name for helper windows e.g. Adobe Photoshop 2020
+# Removal release years
+releaseYearN2="$6" # N-2 release year
+releaseYearPrevious="$7" # Previous/LTS release year
+# base version (https://helpx.adobe.com/enterprise/kb/apps-deployed-without-base-versions.html)
+baseVersionN2="$8" # N-2 release
+baseVersionPrevious="$9" # Previous/LTS release
+# CC App name for helper windows e.g. Adobe Photoshop 2022
 appNameForInstall="${10}"
-# Jamf Helper timeout setting
+# jamfHelper timeout setting e.g 7200 for 2 hours
 helperTimeout="${11}"
-############ Variables for Jamf Pro Parameters - End ###################
+############ Vari#ables for Jamf Pro Parameters - End ###################
 
 # Get the logged in user
 loggedInUser=$(stat -f %Su /dev/console)
+# Get the logged in users ID
+loggedInUserID=$(id -u "$loggedInUser")
 # path to binary
 binaryPath="/Library/Application Support/Adobe/Adobe Desktop Common/HDBox/Setup"
-# Jamf Helper
+# CPU Architecture
+cpuArch=$(/usr/bin/arch)
+if [[ "$cpuArch" == "arm64" ]]; then
+    platformID="macOS (Apple Silicon)"
+else
+    platformID="osx10-64"
+fi
+# jamfHelper
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
 if [[ -d "/Applications/Utilities/Adobe Creative Cloud/Utils/Creative Cloud Uninstaller.app" ]]; then
     # Helper Icon Cloud Uninstaller
@@ -42,7 +54,14 @@ else
     helperIcon="/Library/Application Support/JAMF/bin/Management Action.app/Contents/Resources/Self Service.icns"
 fi
 # Helper icon Download
-helperIconDownload="/System/Library/CoreServices/Install in Progress.app/Contents/Resources/Installer.icns"
+installInProgress="/System/Library/CoreServices/Install in Progress.app/Contents/Resources"
+if [[ -f "${installInProgress}/Installer.icns" ]]; then
+    helperIconDownload="${installInProgress}/Installer.icns"
+elif [[ -f "${installInProgress}/AppIcon.icns" ]]; then
+    helperIconDownload="${installInProgress}/AppIcon.icns"
+else
+    helperIconDownload="/Library/Application Support/JAMF/bin/Management Action.app/Contents/Resources/Self Service.icns"
+fi
 # Helper title
 helperTitle="Message from Department Name"
 # Helper heading
@@ -52,34 +71,54 @@ helperHeading="     Upgrade to ${appNameForInstall}     "
 #                            Functions                                 #
 ########################################################################
 
+function runAsUser ()
+{  
+# Run commands as the logged in user
+if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+    echo "No user logged in, unable to run commands as a user"
+else
+    launchctl asuser "$loggedInUserID" sudo -u "$loggedInUser" "$@"
+fi
+}
+
 function killAdobe ()
 {
-# Get all user Adobe Launch Agents/Daemons PIDs
-userPIDs=$(su -l "$loggedInUser" -c "/bin/launchctl list | grep adobe" | awk '{print $1}')
-# Kill all user Adobe Launch Agents/Daemons
-if [[ "$userPIDs" != "" ]]; then
-    while IFS= read -r line; do
-        kill -9 "$line" 2>/dev/null
-    done <<< "$userPIDs"
+if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+    echo "No user logged in"
+else
+    # Get all user Adobe Launch Agents PIDs
+    userPIDs=$(runAsUser launchctl list | grep "adobe" | awk '{print $1}')
+    # Kill all processes
+    if [[ "$userPIDs" != "" ]]; then
+        while IFS= read -r line; do
+            kill -9 "$line" &>/dev/null
+        done <<< "$userPIDs"
+    fi
+    launchAgents=$(find "/Library/LaunchAgents" -iname "com.adobe*" -type f -maxdepth 1)
+    if [[ "$launchAgents" != "" ]]; then
+        # Bootout all user Adobe Launch Agents
+        launchctl bootout gui/"$loggedInUserID" /Library/LaunchAgents/com.adobe.* &>/dev/null
+    fi
+    launchDaemons=$(find "/Library/LaunchDaemons" -iname "com.adobe*" -type f -maxdepth 1)
+    if [[ "$launchDaemons" != "" ]]; then
+        # Bootout Adobe Launch Daemons
+        launchctl bootout system /Library/LaunchDaemons/com.adobe.* &>/dev/null
+    fi
+    pkill -9 "obe" &>/dev/null
+    sleep 5
+    # Close any Adobe Crash Reporter windows (e.g. Bridge)
+    pkill -9 "Crash Reporter" &>/dev/null
 fi
-# Unload user Adobe Launch Agents
-su -l "$loggedInUser" -c "/bin/launchctl unload /Library/LaunchAgents/com.adobe.* 2>/dev/null"
-# Unload Adobe Launch Daemons
-/bin/launchctl unload /Library/LaunchDaemons/com.adobe.* 2>/dev/null
-pkill -9 "obe" >/dev/null 2>&1
-sleep 5
-# Close any Adobe Crash Reporter windows (e.g. Bridge)
-pkill -9 "Crash Reporter" >/dev/null 2>&1
 }
 
 function jamfHelperConfirm ()
 {
-# Show a message via Jamf Helper that the update is ready, this is after it has been deferred
+# Show a message via jamfHelper that the update is ready, this is after it has been deferred
 "$jamfHelper" -windowType utility -icon "$helperIcon" -title "$helperTitle" -heading "$helperHeading" -alignHeading natural \
 -description "To keep your Mac secure ${appNameForRemoval} will now be upgraded to the latest version (All previous versions will be removed).
 For this to complete successfully all Adobe CC applications must be closed during the process.
 
-Please save all of your work before clicking Start" -timeout "$helperTimeout" -countdown -alignCountdown center -button1 "Start" -defaultButton "1"
+Please save all of your work before clicking Upgrade" -timeout "$helperTimeout" -countdown -alignCountdown center -button1 "Upgrade" -defaultButton "1"
 }
 
 function jamfHelperCleanUp ()
@@ -104,58 +143,36 @@ function jamfHelperDownloadInProgress ()
 function removePreviousVersions ()
 {
 echo "Uninstalling previous verisons of ${appNameForRemoval}..."
-# Uninstall 2015 - Look for 2015.1-5 first as they can be uninstalled via command line
-"$binaryPath" --uninstall=1 --sapCode="$sapCode" --baseVersion="$version2015" --platform=osx10-64 --deleteUserPreferences=false >/dev/null 2>&1
-uninstallResult2015="$?"
-if [[ "$uninstallResult2015" -eq "0" ]]; then
-    echo "${appNameForRemoval} 2015 uninstalled"
-fi
-# if version 2015 is installed then the directory must be removed
-if [[ -d "/Applications/${appNameForRemoval} 2015" ]]; then
-    rm -rf "/Applications/${appNameForRemoval} 2015" >/dev/null 2>&1
-    sleep 2
-    # Sometimes the directory stays behind empty so delete again to make sure
-    rm -rf "/Applications/${appNameForRemoval} 2015" >/dev/null 2>&1
-    if [[ ! -d "/Applications/${appNameForRemoval} 2015" ]]; then
-        echo "${appNameForRemoval} 2015 uninstalled"
+# Uninstall N-2 release
+if [[ "$baseVersionN2" != "" ]]; then
+    # If the app has no release year in the name (Dimension, XD etc) then report the base version after the uninstall
+    if [[ "$releaseYearN2" == "" ]]; then
+        releaseYearN2="$baseVersionN2"
+    fi
+    "$binaryPath" --uninstall=1 --sapCode="$sapCode" --baseVersion="$baseVersionN2" --platform="$platformID" --deleteUserPreferences=false &>/dev/null
+    uninstallResultN2="$?"
+    if [[ "$uninstallResultN2" -eq "0" ]]; then
+        echo "${appNameForRemoval} ${releaseYearN2} uninstalled"
+    fi
+     # Confirm the directory has been deleted - manually installed plugins can result in the directory not being removed
+    if [[ -d "/Applications/${appNameForRemoval} ${releaseYearN2}" ]]; then
+        rm -rf "/Applications/${appNameForRemoval} ${releaseYearN2}" &>/dev/null
     fi
 fi
-# Uninstall 2017
-"$binaryPath" --uninstall=1 --sapCode="$sapCode" --baseVersion="$version2017" --platform=osx10-64 --deleteUserPreferences=false >/dev/null 2>&1
-uninstallResult2017="$?"
-if [[ "$uninstallResult2017" -eq "0" ]]; then
-    echo "${appNameForRemoval} 2017 uninstalled"
-fi
-sleep 2
-# Confirm the directory has been deleted - manually installed plugins can result in the directory not being removed
-if [[ -d "/Applications/${appNameForRemoval} 2017" ]]; then
-    rm -rf "/Applications/${appNameForRemoval} 2017" >/dev/null 2>&1
-fi
-# Uninstall 2018
-"$binaryPath" --uninstall=1 --sapCode="$sapCode" --baseVersion="$version2018" --platform=osx10-64 --deleteUserPreferences=false >/dev/null 2>&1
-uninstallResult2018="$?"
-if [[ "$uninstallResult2018" -eq "0" ]]; then
-    echo "${appNameForRemoval} 2018 uninstalled"
-fi
-sleep 2
-# Confirm the directory has been deleted - manually installed plugins can result in the directory not being removed
-if [[ -d "/Applications/${appNameForRemoval} 2018" ]]; then
-    rm -rf "/Applications/${appNameForRemoval} 2018" >/dev/null 2>&1
-fi
-# Uninstall 2019
-if [[ "$appNameForRemoval" =~ "InCopy" ]] || [[ "$appNameForRemoval" =~ "InDesign" ]]; then
-    echo "Policy is for ${appNameForRemoval}"
-    echo "If installed, CC 2019 will not be removed"
-else
-    "$binaryPath" --uninstall=1 --sapCode="$sapCode" --baseVersion="$version2019" --platform=osx10-64 --deleteUserPreferences=false >/dev/null 2>&1
-    uninstallResult2019="$?"
-    if [[ "$uninstallResult2019" -eq "0" ]]; then
-        echo "${appNameForRemoval} 2019 uninstalled"
+# Uninstall previous release
+if [[ "$baseVersionPrevious" != "" ]]; then
+    # If the app has no release year in the name (Dimension, XD etc) then report the base version after the uninstall
+    if [[ "$releaseYearPrevious" == "" ]]; then
+        releaseYearPrevious="$baseVersionPrevious"
     fi
-    sleep 2
+    "$binaryPath" --uninstall=1 --sapCode="$sapCode" --baseVersion="$baseVersionPrevious" --platform="$platformID" --deleteUserPreferences=false &>/dev/null
+    uninstallResultPrevious="$?"
+    if [[ "$uninstallResultPrevious" -eq "0" ]]; then
+        echo "${appNameForRemoval} ${releaseYearPrevious} uninstalled"
+    fi
     # Confirm the directory has been deleted - manually installed plugins can result in the directory not being removed
-    if [[ -d "/Applications/${appNameForRemoval} 2019" ]]; then
-        rm -rf "/Applications/${appNameForRemoval} 2019" >/dev/null 2>&1
+    if [[ -d "/Applications/${appNameForRemoval} ${releaseYearPrevious}" ]]; then
+        rm -rf "/Applications/${appNameForRemoval} ${releaseYearPrevious}" &>/dev/null
     fi
 fi
 }
@@ -169,10 +186,10 @@ if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
     # Remove all previous versions
     removePreviousVersions
 else
-    echo "Jamf helper displayed to ${loggedInUser} to start the upgrade process"
+    echo "jamfHelper displayed to ${loggedInUser} to start the upgrade process"
     # Advise the user what is happening and get confirmation or run anyway in 2 hours time
     jamfHelperConfirm
-    # Jamf Helper for app closure and removal
+    # jamfHelper for app closure and removal
     jamfHelperCleanUp
     # Wait a few seconds for the helper message to be seen before closing the apps
     sleep 5
@@ -183,8 +200,8 @@ else
     # Remove all previous versions
     removePreviousVersions
     # Kill the cleaning up helper
-    killall -13 "jamfHelper" >/dev/null 2>&1
-    # Jamf Helper for app download+install
+    killall -13 "jamfHelper" &>/dev/null
+    # jamfHelper for app download+install
     jamfHelperDownloadInProgress
 fi
 exit 0
