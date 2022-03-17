@@ -36,22 +36,40 @@ helperHeading="     Adobe CC Application Updates     "
 #                            Functions                                 #
 ########################################################################
 
+function runAsUser ()
+{  
+# Run commands as the logged in user
+if [[ "$loggedInUser" == "" ]] || [[ "$loggedInUser" == "root" ]]; then
+    echo "No user logged in, unable to run commands as a user"
+else
+    launchctl asuser "$loggedInUserID" sudo -u "$loggedInUser" "$@"
+fi
+}
+
 function killAdobe ()
 {
+# Get all user Adobe Launch Agents PIDs
+userPIDs=$(runAsUser launchctl list | grep "adobe" | awk '{print $1}')
 # Kill all processes
 if [[ "$userPIDs" != "" ]]; then
     while IFS= read -r line; do
-        kill -9 "$line" 2>/dev/null
+        kill -9 "$line" &>/dev/null
     done <<< "$userPIDs"
 fi
-# Bootout all user Adobe Launch Agents
-launchctl bootout gui/"$loggedInUserID" /Library/LaunchAgents/com.adobe.* 2>/dev/null
-# Bootout Adobe Launch Daemons
-launchctl bootout system /Library/LaunchDaemons/com.adobe.* 2>/dev/null
-pkill -9 "obe"
+launchAgents=$(find "/Library/LaunchAgents" -iname "com.adobe*" -type f -maxdepth 1)
+if [[ "$launchAgents" != "" ]]; then
+    # Bootout all user Adobe Launch Agents
+    launchctl bootout gui/"$loggedInUserID" /Library/LaunchAgents/com.adobe.* &>/dev/null
+fi
+launchDaemons=$(find "/Library/LaunchDaemons" -iname "com.adobe*" -type f -maxdepth 1)
+if [[ "$launchDaemons" != "" ]]; then
+    # Bootout Adobe Launch Daemons
+    launchctl bootout system /Library/LaunchDaemons/com.adobe.* &>/dev/null
+fi
+pkill -9 "obe" &>/dev/null
 sleep 5
 # Close any Adobe Crash Reporter windows (e.g. Bridge)
-pkill -9 "Crash Reporter"
+pkill -9 "Crash Reporter" &>/dev/null
 }
 
 function jamfHelperUpdatesAvailable ()
@@ -127,11 +145,11 @@ updatesInstalled=$(sed -n '/Following Updates were successfully installed*/,/\*/
     | sed 's/COSY/CoreSync/g' \
     | sed 's/CCXP/CCXProcess/g' \
     | sed 's/COMP/Color\ Profiles/g' \
-    | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
-    | sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
+    | sed 's/ACAI/Content\ Authenticity\ Tool/g' \
+    | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' | sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
     | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
-    | sed 's/[()]//g' | sed 's/osx10-64//g' | sed 's/osx10//g' | sed 's/macuniversal//g' | sed 's/\// /g' \
-    | grep -v "*")
+    | sed 's/[()]//g' | sed 's/osx10-64//g' | sed 's/osx10//g' | sed 's/macuniversal//g' | sed 's/macarm64//g' \
+    | sed 's/\// /g' | grep -v "*")
 echo "All updates below installed successfully"
 echo "------------------------------------------"
 echo "$updatesInstalled"
@@ -195,11 +213,11 @@ else
         | sed 's/COSY/CoreSync/g' \
         | sed 's/CCXP/CCXProcess/g' \
         | sed 's/COMP/Color\ Profiles/g' \
-        | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' \
-    	| sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
+        | sed 's/ACAI/Content\ Authenticity\ Tool/g' \
+        | sed 's/AdobeAcrobatDC-19.0/Acrobat\ Pro\ DC/g' | sed 's/AdobeAcrobatDC-20.0/Acrobat\ Pro\ DC/g' \
         | sed 's/AdobeARMDCHelper/Acrobat\ Update\ Helper/g' \
-        | sed 's/[()]//g' | sed 's/osx10-64//g' | sed 's/osx10//g' | sed 's/macuniversal//g' | sed 's/\// /g' \
-        | grep -v "*")
+        | sed 's/[()]//g' | sed 's/osx10-64//g' | sed 's/osx10//g' | sed 's/macuniversal//g' | sed 's/macarm64//g' \
+        | sed 's/\// /g' | grep -v "*")
     # Check if any updates are required
     updatesCheck=$(cat "$logFile")
     if [[ "$updatesCheck" =~ "Following" ]]; then
