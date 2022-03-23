@@ -23,7 +23,14 @@ downloadDir="/private/var/tmp/${appName}Download"
 # jamf Helper
 jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
 # Helper icon Download
-helperIconDownload="/System/Library/CoreServices/Install in Progress.app/Contents/Resources/Installer.icns"
+installInProgress="/System/Library/CoreServices/Install in Progress.app/Contents/Resources"
+if [[ -f "${installInProgress}/Installer.icns" ]]; then
+    helperIconDownload="${installInProgress}/Installer.icns"
+elif [[ -f "${installInProgress}/AppIcon.icns" ]]; then
+    helperIconDownload="${installInProgress}/AppIcon.icns"
+else
+    helperIconDownload="/Library/Application Support/JAMF/bin/Management Action.app/Contents/Resources/Self Service.icns"
+fi
 # Helper title
 helperTitle="Message From Bauer Technology"
 # Helper heading
