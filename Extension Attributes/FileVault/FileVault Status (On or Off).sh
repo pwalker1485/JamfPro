@@ -6,5 +6,5 @@
 ########################################################################
 
 fvStatus=$(fdesetup status | awk '/FileVault is/{print $3}' | tr -d .)
-echo "<result>$fvStatus</result>"
+echo "<result>${fvStatus}</result>"
 exit 0
