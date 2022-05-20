@@ -40,7 +40,7 @@ serialNumber=$(system_profiler SPHardwareDataType | awk '/Serial Number/{print $
 # Mac model (friendly name)
 macModelFriendly=$(system_profiler SPHardwareDataType | grep "Model Name" | sed 's/Model Name: //' | xargs)
 # OS product version
-productVersion=$(/usr/bin/sw_vers -productVersion)
+osVersion=$(sw_vers -productVersion)
 # Big Sur major version
 bigSurMajor="11"
 # Monterey major version
@@ -50,14 +50,14 @@ if is-at-least "$montereyMajor" "$osVersion"; then
     btPowerState=$(system_profiler SPBluetoothDataType | awk '/State/ {print $NF}')
 else
     controllerPowerState=$(/usr/libexec/PlistBuddy -c "print ControllerPowerState" /Library/Preferences/com.apple.Bluetooth.plist 2>/dev/null)
-    if [[ "$controllerPowerState" == "0" ]] || [[ "$controllerPowerState" == "false" ]]; then
-        btPowerState="Off"
-    else
+    if [[ "$controllerPowerState" == "1" ]] || [[ "$controllerPowerState" == "true" ]]; then
         btPowerState="On"
+    else
+        btPowerState="Off"
     fi
 fi
 # Check if the Mac is running Big Sur or later
-if is-at-least "$bigSurMajor" "$productVersion"; then
+if is-at-least "$bigSurMajor" "$osVersion"; then
     # Jamf helper icon
     helperIcon="/System/Library/PreferencePanes/Bluetooth.prefPane/Contents/Resources/Bluetooth.icns"
 else
@@ -146,12 +146,12 @@ function menuBarItem ()
 {
 # Add the item to the menu bar (macOS Catalina or earlier only)
 if [[ "$osVersion" == "macOS 10" ]]; then
-    echo "${macModelFriendly} running macOS ${productVersion}, adding Bluetooth to the menu bar..."
+    echo "${macModelFriendly} running macOS ${osVersion}, adding Bluetooth to the menu bar..."
     runAsUser open '/System/Library/CoreServices/Menu Extras/Bluetooth.menu/'
     echo "Bluetooth status and preferences available in the menu bar"
     helperMenuItem="Status and preferences can be found in the menu bar"
 else
-    echo "${macModelFriendly} running macOS ${productVersion}, Bluetooth status available in Control Center"
+    echo "${macModelFriendly} running macOS ${osVersion}, Bluetooth status available in Control Center"
     helperMenuItem="Status and preferences can be found in Control Center"
 fi
 }
