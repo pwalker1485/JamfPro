@@ -122,19 +122,23 @@ else
     # Decrypt the username and password
     apiUsername=$(decryptString "$encryptedUsername" 'Salt value' 'Passphrase value')
     apiPassword=$(decryptString "$encryptedPassword" 'Salt value' 'Passphrase value')
+    # Get a bearer token
+    getAuthToken
+    # Check the token
+    checkAndRenewAuthToken
     echo "Sending Disable Bluetooth remote command..."
     # Get the computer ID
-    computerID=$(curl -sfku "${apiUsername}:${apiPassword}" -H "accept: application/xml" "${jamfProURL}/computers/serialnumber/${serialNumber}" \
-    | xmllint --xpath '/computer/general/id/text()' -)
+    computerID=$(curl -sf --header "Authorization: Bearer ${authToken}" "${jamfProURL}/JSSResource/computers/serialnumber/${serialNumber}/subset/general" \
+    -X GET -H "accept: application/xml" | xmllint --xpath "/computer/general/id/text()" - 2>/dev/null)
     # Send Disable Bluetooth command
-    curl -sfku "${apiUsername}:${apiPassword}" -H "accept: application/xml" "${jamfProURL}/computercommands/command/SettingsDisableBluetooth/id/${computerID}" -X POST &>/dev/null
+    curl -sf --header "Authorization: Bearer ${authToken}" "${jamfProURL}/JSSResource/computercommands/command/SettingsDisableBluetooth/id/${computerID}" -X POST &>/dev/null
     # Waiting for the command to be actioned and the Bluetooth controller state to change can take several minutes so only check the command was sent
     commandResult="$?"
     if [[ "$commandResult" -eq "0" ]]; then
         echo "Disable Bluetooth remote command sent successfully"
     else
         # Try sending the Disable Bluetooth command again
-        curl -sfku "${apiUsername}:${apiPassword}" -H "accept: application/xml" "${jamfProURL}/computercommands/command/SettingsDisableBluetooth/id/${computerID}" -X POST &>/dev/null
+        curl -sf --header "Authorization: Bearer ${authToken}" "${jamfProURL}/JSSResource/computercommands/command/SettingsDisableBluetooth/id/${computerID}" -X POST &>/dev/null
         commandResult="$?"
         if [[ "$commandResult" -eq "0" ]]; then
             echo "Disable Bluetooth remote command sent successfully"
@@ -142,5 +146,7 @@ else
             echo "Failed to send remote command, Bluetooth will remain enabled"
         fi
     fi
+    # Invalidate the authorisation token
+    invalidateToken
 fi
 exit 0
